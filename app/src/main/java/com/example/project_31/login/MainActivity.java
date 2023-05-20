@@ -49,4 +49,5 @@ public class MainActivity extends AppCompatActivity {
 
     }
 }
-// 테스트
+// 테스트 - 가연
+// 테스트 - 진성
