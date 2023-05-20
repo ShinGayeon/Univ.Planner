@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/chatImg"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@mipmap/ic_launcher"
+        android:layout_alignParentLeft="true"/>
+    <TextView
+        android:id="@+id/chatName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="name"
+        android:textColor="#333333"
+        android:textStyle="bold"
+        android:layout_toRightOf="@+id/chatImg"
+        android:layout_marginLeft="11dp"/>
+
+    <TextView
+        android:id="@+id/chatMsg"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hello android"
+        android:layout_below="@+id/chatName"
+        android:layout_toRightOf="@id/chatImg"
+        android:layout_marginLeft="11dp"
+        android:padding="12dp"
+        android:maxWidth="250dp"
+        android:background="@drawable/chat_mybox_back"
+        android:textColor="#000000"/>
+    <TextView
+        android:id="@+id/chatTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="13:35"
+        android:textSize="12sp"
+        android:layout_toRightOf="@+id/chatMsg"
+        android:layout_marginLeft="8dp"
+        android:layout_alignBottom="@id/chatMsg"/>
+</RelativeLayout>
+

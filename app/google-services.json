@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "793733908872",
+    "project_id": "ysrevengers",
+    "storage_bucket": "ysrevengers.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:793733908872:android:569d2cf426fc5b50a0d23d",
+        "android_client_info": {
+          "package_name": "com.example.project_31"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "793733908872-v8avqq38magijbqbc7s5gh99jttbahhc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAQe3iZg9Lwrec9Ed8Sh6EO192iaJe5VSo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "793733908872-v8avqq38magijbqbc7s5gh99jttbahhc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

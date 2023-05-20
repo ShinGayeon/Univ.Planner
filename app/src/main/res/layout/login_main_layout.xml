@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp">
+
+        <!-- 원형 아이콘 -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:id="@+id/main_image"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/doomock"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:layout_gravity="left"
+            android:layout_marginLeft="30dp"
+            android:text="로그인 정보를 입력해주세요"
+            android:textStyle="bold"
+            android:textSize="16dp"
+            android:layout_marginBottom="10dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/login_email"
+            android:layout_width="264dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="30dp"
+            android:background="@color/white"
+            android:hint="이메일"
+            android:textSize="17dp"
+            android:inputType="textEmailAddress"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:passwordToggleEnabled="true">
+
+            <EditText
+                android:id="@+id/login_password"
+                android:layout_width="264dp"
+                android:layout_height="50dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="7dp"
+                android:layout_marginLeft="30dp"
+                android:hint="비밀번호"
+                android:textSize="17dp"
+                android:inputType="textPassword"
+                android:background="@color/white"
+                android:scrollHorizontally="false" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/login"
+            android:text="로그인"
+            android:textSize="17sp"
+            android:padding="10dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="35dp"
+            android:backgroundTint="#BB2649" />
+
+        <Button
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/sign"
+            android:layout_gravity="center"
+            android:text="회원가입"
+            android:textSize="17sp"
+            android:padding="10dp"
+            android:backgroundTint="#DCDCDC"
+            android:textColor="#247A87"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_gravity="center"
+            android:text="Or Sign In with"
+            android:textStyle="bold"
+            android:textSize="16dp"
+            android:textColor="#9CA4AB"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_gravity="bottom"
+            android:layout_marginTop="15dp">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/google"
+                android:layout_gravity="left"
+                android:layout_marginLeft="110dp"
+                android:src="@drawable/google"
+                tools:ignore="MissingClass" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/apple"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="30dp"
+                android:src="@drawable/apple" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:id="@+id/facebook"
+                android:layout_marginLeft="30dp"
+                android:src="@drawable/facebook"/>
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>
