@@ -46,9 +46,20 @@
             android:paddingLeft="5dp"
             android:paddingRight="5dp"
             android:backgroundTint="#BB2649"
-            android:text="카테고리＋"
+            android:text="⊕ 카테고리"
             android:textStyle="bold"
             android:id="@+id/categoryAddBtn" />
+
+        <Button
+            android:layout_width="90dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:backgroundTint="#BB2649"
+            android:text="⊖ 카테고리"
+            android:textStyle="bold"
+            android:id="@+id/categoryRemoveBtn" />
 
     </LinearLayout>
 

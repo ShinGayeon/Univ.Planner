@@ -11,6 +11,7 @@ import android.text.InputFilter;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,6 +37,7 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 
 import devs.mulham.horizontalcalendar.HorizontalCalendar;
@@ -114,7 +116,7 @@ public class TodoMainActivity extends AppCompatActivity {
             }
         });
 
-        // 카테고리+ 버튼 눌렀을 때
+        // + 카테고리 버튼 눌렀을 때
         categoryAddBtn = findViewById(R.id.categoryAddBtn);
 
         //등록
@@ -142,7 +144,19 @@ public class TodoMainActivity extends AppCompatActivity {
                     }
                 });
             }
+        }); // onClick categoryAddBtn
+
+        // - 카테고리 버튼 눌렀을 때
+        categoryRemoveBtn = findViewById(R.id.categoryRemoveBtn);
+
+        // 삭제
+        categoryRemoveBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showRemoveDialog();
+            }
         });
+
 
 
         // 월간 달력으로 이동
@@ -181,17 +195,16 @@ public class TodoMainActivity extends AppCompatActivity {
                     for (DataSnapshot todoSnapshot : categorySnapshot.getChildren()) {
                         String todoListValue = todoSnapshot.getValue(String.class);
                         String cherryKey = todoSnapshot.getKey().substring(0, categoryKey.length());
-                        Log.d("출력뭐됨", cherryKey + " " + todoListValue);
 
                         if (todoSnapshot.getKey().startsWith(categoryKey)) {
                             test.add(todoListValue);
                             todoListValues.put(categoryKey, test);
-                            Log.d("하잇",todoListValues.toString());
+
                         }
                     }
                 }
                 DBpushButton(todoListKeys, todoListValues);
-                Log.d("뭘보내는데?",todoListValues.toString());
+
             }
 
             @Override
@@ -250,6 +263,37 @@ public class TodoMainActivity extends AppCompatActivity {
         }//for
 
     } // DBpushButton
+
+    private void showRemoveDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("삭제할 투두리스트 선택");
+
+        // Firebase에서 읽어온 투두리스트 항목들로 체크박스 목록을 생성합니다.
+        final List<String> todoKeys = new ArrayList<>(TodoList1.keySet());
+        boolean[] checkedItems = new boolean[todoKeys.size()];
+        builder.setMultiChoiceItems(todoKeys.toArray(new String[0]), checkedItems, null);
+
+        builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // 체크된 항목을 삭제합니다.
+                for (int i = checkedItems.length - 1; i >= 0; i--) {
+                    if (checkedItems[i]) {
+                        String key = todoKeys.get(i);
+                        todoListDB.child(key).removeValue();
+                    }
+                }
+
+                // 삭제 후 화면을 다시 동기화합니다.
+                readDB();
+            }
+        });
+
+        builder.setNegativeButton("취소", null);
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
     private void DBTodoListAdd(LinearLayout categoryLayout,String cateGory){
         int maxLength = 15; //글자수 제한
