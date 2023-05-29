@@ -73,4 +73,4 @@ public class ChatAdapter extends BaseAdapter {
 
         return itemView;
     }
-}
+} // dd
