@@ -3,17 +3,20 @@ package com.example.project_31.todo;
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.Paint;
+import android.widget.LinearLayout.LayoutParams;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.InputFilter;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -26,7 +29,6 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.example.project_31.R;
 import com.example.project_31.chat.ChatMainActivity;
-import com.example.project_31.login.MainActivity;
 import com.example.project_31.todoVO.TodoVO;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,7 +38,9 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
@@ -48,38 +52,37 @@ public class TodoMainActivity extends AppCompatActivity {
     // 달력 사용 코드
     TextView calendarTextview, monthlyMoveText, chatMoveText, test;
     int year, month, day;
-
     // 카테고리 버튼이 생성될 공간
     private LinearLayout dynamicLayout;
 
     // 카테고리 버튼 내부에 추가, 삭제 버튼 생성
     Button categoryAddBtn, categoryRemoveBtn;
 
-    // 카테고리>투두리스트 사용 코드
-    private ArrayList<String> todoList = new ArrayList<>() ;
-    private HashMap<String,Object> TodoList1 = new HashMap<>();
-    TodoVO item = new TodoVO();
+    HashMap<String, Object> hashMap = new HashMap<>();
+    int count = 1;
 
     // 데이터베이스 연동
     DatabaseReference todoListDB = FirebaseDatabase.getInstance().getReference("TodoList");
-    int todoListNum = 1;
 
+    ArrayList<String> todoListKeys;
     // 카테고리 색상
-    String[] categoryColor={"categorypink","categoryblue","categorygreen","categoryyellow"};
+    String[] categoryColor={"categorypink","categorybrown","categorydarkblue","categorygray",
+            "categoryred","categoryorange","categorypurple","categoryrightpink"};
 
     // 랜덤 인덱스를 생성하기 위해 Random 객체를 생성합니다.
     Random random = new Random();
 
     Drawable drawable ;
 
+    // 오늘날짜 / 선택날짜
+    String selectDay;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.todo_main_layout);
 
-        readDB();
-// 주간 달력 시작
+        // 주간 달력 시작
         monthlyMoveText = findViewById(R.id.monthlyMoveText);
         dynamicLayout = findViewById(R.id.dynamicLayout);
 
@@ -104,7 +107,15 @@ public class TodoMainActivity extends AppCompatActivity {
         month = startDate.get(Calendar.MONTH)+2;
         day = startDate.get(Calendar.DAY_OF_MONTH);
 
+        String yearString = String.valueOf(year);
+        String monthString = String.valueOf(month);
+        String dayString = String.valueOf(day);
+
+        selectDay = yearString + monthString + dayString;
+
         monthlyMoveText.setText(year + "년 " + month + "월");
+
+        readDB();
 
         // 날짜 선택시 날짜에 맞는 투두리스트 호출
         horizontalCalendar.setCalendarListener(new HorizontalCalendarListener() {
@@ -113,6 +124,13 @@ public class TodoMainActivity extends AppCompatActivity {
                 year = date.get(Calendar.YEAR);
                 month = date.get(Calendar.MONTH)+1;
                 day = date.get(Calendar.DAY_OF_MONTH);
+
+                String yearString = String.valueOf(year);
+                String monthString = String.valueOf(month);
+                String dayString = String.valueOf(day);
+
+                selectDay = yearString + monthString + dayString;
+                readDB();
             }
         });
 
@@ -136,8 +154,6 @@ public class TodoMainActivity extends AppCompatActivity {
                         // 버튼 클릭 이벤트 처리
                         EditText category = linear.findViewById(R.id.inputCategory);
                         String value = category.getText().toString();
-                        addCategory(value);
-                        todoListDB.child(value).child(value + "1").setValue("null");
                         pushButton(value);
 
                         alertDialog.dismiss(); // 다이얼로그 닫기
@@ -181,25 +197,27 @@ public class TodoMainActivity extends AppCompatActivity {
     } // on
 
     public void readDB(){
-        todoListDB.addListenerForSingleValueEvent(new ValueEventListener() {
+        todoListDB.child(selectDay).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ArrayList<String> todoListKeys = new ArrayList<>();
+                todoListKeys = new ArrayList<>();
                 HashMap<String, ArrayList<String>> todoListValues = new HashMap<>();
 
                 for (DataSnapshot categorySnapshot : dataSnapshot.getChildren()) {
                     String categoryKey = categorySnapshot.getKey();
                     todoListKeys.add(categoryKey);
-                    ArrayList<String> test = new ArrayList<>();
+                    ArrayList<String> todoList = new ArrayList<>();
 
                     for (DataSnapshot todoSnapshot : categorySnapshot.getChildren()) {
                         String todoListValue = todoSnapshot.getValue(String.class);
-                        String cherryKey = todoSnapshot.getKey().substring(0, categoryKey.length());
 
-                        if (todoSnapshot.getKey().startsWith(categoryKey)) {
-                            test.add(todoListValue);
-                            todoListValues.put(categoryKey, test);
-
+                        if (todoSnapshot.getKey().startsWith(categoryKey) || todoSnapshot.getKey().startsWith("color")) {
+                            if(!todoSnapshot.getValue().equals("")){
+                                String todoKey = todoSnapshot.getKey();
+                                todoList.add(todoListValue);
+                                todoListValues.put(categoryKey, todoList);
+                                hashMap.put(todoKey,todoListValue);
+                            }
                         }
                     }
                 }
@@ -214,20 +232,37 @@ public class TodoMainActivity extends AppCompatActivity {
         });
     } // method readDB()
 
-    private void DBpushButton(ArrayList<String> key, HashMap<String, ArrayList<String>> todoListValues) {
+    private void DBpushButton(ArrayList<String> cateGory, HashMap<String, ArrayList<String>> todoListValues) {
 //        Set<String> keys = item1.keySet(); // Hashmap에있는 key값 반환
 
         // 이전에 생성된 모든 뷰 제거
         dynamicLayout.removeAllViews(); //이거안하면 이상한거 하나 생김
 
-        for(String item: key) {
 
-            // 배열에서 랜덤한 값을 출력합니다.
-            int randomIndex = random.nextInt(categoryColor.length);  // 0부터 배열의 길이-1까지의 랜덤 인덱스를 생성합니다.
-            String randomValue = categoryColor[randomIndex];
-            // randomValue에 해당하는 drawable 리소스의 식별자를 가져옵니다.
-            int resourceId = getResources().getIdentifier(randomValue, "drawable", getPackageName());
-            drawable = ResourcesCompat.getDrawable(getResources(), resourceId, null);
+        // 카테고리생성
+        for(String item: cateGory) {
+
+            // ArrayList에서 일치하는 항목을 찾아 따로 추출하고, ArrayList에서 제거
+            // 카테고리에 저장된 색상뽑아내기
+            ArrayList<String> categoryColors = new ArrayList<>(); // 색상뽑아내기
+            Iterator<String> iterator = todoListValues.get(item).iterator();
+            while (iterator.hasNext()) {
+                String insertColor = iterator.next();
+                for(String c : categoryColor){
+                    if(c.equals(insertColor)){
+                        categoryColors.add(insertColor);
+                        iterator.remove();
+                    }
+                }
+            }
+
+                int resourceId = getResources().getIdentifier(categoryColors.get(0), "drawable", getPackageName());
+                drawable = ResourcesCompat.getDrawable(getResources(), resourceId, null);
+
+
+//            // randomValue에 해당하는 drawable 리소스의 식별자를 가져옵니다.
+//            int resourceId = getResources().getIdentifier(categoryColor.get(0), "drawable", getPackageName());
+//            drawable = ResourcesCompat.getDrawable(getResources(), resourceId, null);
 
             LinearLayout categoryLayout = new LinearLayout(this);
             categoryLayout.setOrientation(LinearLayout.VERTICAL);
@@ -241,24 +276,26 @@ public class TodoMainActivity extends AppCompatActivity {
             categoryBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    DBTodoListAdd(categoryLayout,item.toString());
+                    DBTodoListAdd(categoryLayout,item,categoryColors.get(0));
                 }
             });
-            categoryLayout.addView(categoryBtn, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT));
+            categoryLayout.addView(categoryBtn, new LayoutParams(LayoutParams.WRAP_CONTENT,
+                    LayoutParams.WRAP_CONTENT));
+
+
+            //todoList생성
 
             ArrayList<String> todoListValue = todoListValues.get(item);
+
             if (todoListValue != null) {
                 for (String value : todoListValue) {
-                    TextView valueTextView = new TextView(this);
-                    valueTextView.setText(value);
-                    valueTextView.setTextSize(20);
-                    valueTextView.setPadding(40, 0, 0, 0);
-                    categoryLayout.addView(valueTextView);
-                }
-            }
+                    DBTodoListRead(categoryLayout,value,item,categoryColors.get(0));
+                } // for
+            } //if
 
             dynamicLayout.addView(categoryLayout);
+
+
 
         }//for
 
@@ -266,24 +303,71 @@ public class TodoMainActivity extends AppCompatActivity {
 
     private void showRemoveDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("삭제할 투두리스트 선택");
+        builder.setTitle("삭제할 카테고리 선택");
 
-        // Firebase에서 읽어온 투두리스트 항목들로 체크박스 목록을 생성합니다.
-        final List<String> todoKeys = new ArrayList<>(TodoList1.keySet());
-        boolean[] checkedItems = new boolean[todoKeys.size()];
-        builder.setMultiChoiceItems(todoKeys.toArray(new String[0]), checkedItems, null);
+        // 다이얼로그 내용을 담을 레이아웃을 생성합니다.
+        LinearLayout container = new LinearLayout(this);
+        container.setOrientation(LinearLayout.VERTICAL);
 
+        final List<String> todoKeys = new ArrayList<>(todoListKeys);
+
+        todoListDB.child(selectDay).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                HashMap<String, ArrayList<String>> todoListValues = new HashMap<>();
+
+                for (DataSnapshot categorySnapshot : dataSnapshot.getChildren()) {
+                    String categoryKey = categorySnapshot.getKey();
+                    todoListKeys.add(categoryKey);
+                }
+            }
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                // 취소될 때 호출되는 메서드
+            }
+        });
+
+        // ArrayList에 있는 각 항목마다 체크박스를 생성하고 레이아웃에 추가합니다.
+        for (int i = 0; i < todoKeys.size(); i++) {
+            String item = todoKeys.get(i);
+
+            CheckBox checkBox = new CheckBox(this);
+            checkBox.setId(i);
+            checkBox.setText(item);
+
+            container.addView(checkBox);
+        }
+
+        builder.setView(container);
+
+        // 확인 버튼 클릭 이벤트를 처리합니다.
         builder.setPositiveButton("확인", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                // 체크된 항목을 삭제합니다.
-                for (int i = checkedItems.length - 1; i >= 0; i--) {
-                    if (checkedItems[i]) {
-                        String key = todoKeys.get(i);
-                        todoListDB.child(key).removeValue();
+                ArrayList<Integer> removeIds = new ArrayList<>(); // 삭제할 체크박스의 ID를 저장할 리스트
+                for (int i = 0; i < container.getChildCount(); i++) {
+                    CheckBox checkBox = (CheckBox) container.getChildAt(i);
+                    if (checkBox.isChecked()) {
+                        int id = checkBox.getId();
+                        String key = checkBox.getText().toString();
+                        todoListDB.child(selectDay).child(key).removeValue();
+                        removeIds.add(id);
+
+                        Iterator<String> iterator = hashMap.keySet().iterator();
+                        while (iterator.hasNext()) {
+                            String key1 = iterator.next();
+                            if (key1.startsWith(key)) {
+                                iterator.remove(); // 해당 key 값을 가진 항목 제거
+                            }
+                        }
+
                     }
                 }
-
+                // 삭제할 체크박스의 ID를 역순으로 정렬하여 제거합니다.
+                Collections.sort(removeIds, Collections.reverseOrder());
+                for (int id : removeIds) {
+                    todoKeys.remove(id);
+                }
                 // 삭제 후 화면을 다시 동기화합니다.
                 readDB();
             }
@@ -295,21 +379,117 @@ public class TodoMainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void DBTodoListAdd(LinearLayout categoryLayout,String cateGory){
-        int maxLength = 15; //글자수 제한
+    private void DBTodoListAdd(LinearLayout categoryLayout,String cateGory,String color){
 
-        Toast.makeText(getApplicationContext(),cateGory,Toast.LENGTH_SHORT).show();
-        int i;
+        String fixcolor = color.substring(8); // ex) categroy_brown -> brown
+        int resourceId = getResources().getIdentifier("oncheck_" + fixcolor, "drawable", getPackageName());
+
+        int maxLength = 15;
         EditText todoListEd = new EditText(this);
         TextView todoListTv = new TextView(this);
 
-        todoListEd.setSingleLine(true); //줄바꿈 금지
         todoListEd.setFilters(new InputFilter[] {
                 new InputFilter.LengthFilter(maxLength)}); //글자수제한
-        todoListEd.setWidth(1000); // EditText 가로사이즈
-        todoListTv.setVisibility(View.GONE); // TextView 안보이게 설정
-        todoListTv.setTextSize(20); // TextView 글씨 크기
-        todoListTv.setPadding(40, 0, 0, 0);
+
+        todoListTv.setVisibility(View.GONE);
+
+        // 체크 버튼 , 텍스트 , 삭제버튼을 담을 LinearLayout 생성
+        LinearLayout checkTodoRemoveLayout = new LinearLayout(this);
+        checkTodoRemoveLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        checkTodoRemoveLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        CheckBox vCheckBox = new CheckBox(this);
+        LayoutParams checkboxParams = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        checkboxParams.weight = 1;
+        vCheckBox.setLayoutParams(checkboxParams);
+        boolean imgIsChecked  = false; // 체크박스 상태를 체크해 이미지 변경하기위한 변수
+        vCheckBox.setPadding(0,20,0,20);
+
+
+        // 체크박스 클릭시 이미지 변경
+        vCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // 체크 상태가 변경될 때마다 SharedPreferences 업데이트
+//                SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs"+ cateGory + todoList, MODE_PRIVATE);
+//                SharedPreferences.Editor editor = sharedPreferences.edit();
+//                editor.putBoolean("isChecked", isChecked);
+//                editor.apply();
+
+                if (isChecked) {
+                    vCheckBox.setButtonDrawable(resourceId); // 체크된 상태 이미지 설정
+                } else {
+                    vCheckBox.setButtonDrawable(R.drawable.offcheck); // 체크되지 않은 상태 이미지 설정
+                }
+                underlineTextView(checkTodoRemoveLayout,isChecked); // 체크가 되면 밑줄
+
+            }
+        });
+
+
+        LayoutParams textParams = new LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT
+        );
+        textParams.weight = 10;
+        todoListTv.setLayoutParams(textParams);
+        todoListEd.setLayoutParams(textParams);
+        todoListEd.setTextSize(20);
+        todoListEd.setHint("15자 미만 입력 해주세요.");
+        todoListTv.setTextSize(20);
+        todoListTv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                todoListTv.setVisibility(View.GONE);
+                todoListEd.setVisibility(View.VISIBLE);
+            }
+        }); //todoListTv.setOnKeyListener
+
+
+
+        TextView deleteButton = new TextView(this);
+        LayoutParams deleteParams = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        deleteParams.weight = 1;
+        deleteButton.setLayoutParams(deleteParams);
+        deleteButton.setPadding(0,20,20,20);
+        deleteButton.setText("X");
+
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                categoryLayout.removeView(checkTodoRemoveLayout);
+                // categoryKey 아래에 있는 자식 노드들을 가져옵니다.
+                todoListDB.child(cateGory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                            String childKey = childSnapshot.getKey();
+                            String childValue = childSnapshot.getValue(String.class);
+                            String node = todoListTv.getText().toString();
+                            // 원하는 값인 를 가진 자식 노드를 삭제합니다.
+                            if (childValue.equals(node)) {
+                                todoListDB.child(selectDay).child(cateGory).child(childKey).removeValue();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // 에러 처리
+                    }
+                });
+            }
+        });
 
         todoListEd.setOnKeyListener(new View.OnKeyListener() {
             @Override
@@ -321,24 +501,28 @@ public class TodoMainActivity extends AppCompatActivity {
                             categoryLayout.removeView(todoListTv);
                         }
                         String todoList = todoListEd.getText().toString();
-                        TodoList1.put(cateGory + todoListNum, todoList);
+
+                        String newKey = cateGory;
+
+                        while (hashMap.containsKey(newKey)) {
+                            newKey = cateGory + "_" + count; // 다른 이름으로 key를 변경
+                            count++;
+                        }
+                        hashMap.put(newKey, todoList);
+
+
 
                         HashMap<String, Object> filteredMap = new HashMap<>();
-                        for (String key : TodoList1.keySet()) {
-                            if (key.startsWith(cateGory)) {
-                                String value = (String) TodoList1.get(key);
+                        for (String key : hashMap.keySet()) {
+                            if (key.startsWith(cateGory) || key.startsWith("color")) {
+                                String value = (String) hashMap.get(key);
                                 filteredMap.put(key, value);
                             }
                         }
-                        todoListDB.child(cateGory).setValue(filteredMap);
+                        todoListDB.child(selectDay).child(cateGory).setValue(filteredMap);
                         todoListTv.setText(todoList);
                         todoListTv.setVisibility(View.VISIBLE);
                         todoListEd.setVisibility(View.GONE);
-
-                        // todoListDB.child(cateGory).setValue(TodoList1);
-
-                        // todoListDB.child(value).child("todoList"+todoListNum).setValue(todoList);
-                        todoListNum += 1;
                         break;
                 }
 
@@ -346,6 +530,88 @@ public class TodoMainActivity extends AppCompatActivity {
             }
         });//todoListEd.setOnKeyListener
 
+        // 만들어논 레이아웃 화면에 보이기
+        checkTodoRemoveLayout.addView(vCheckBox);
+        checkTodoRemoveLayout.addView(todoListTv);
+        checkTodoRemoveLayout.addView(todoListEd);
+        checkTodoRemoveLayout.addView(deleteButton);
+        checkTodoRemoveLayout.setPadding(0,30,0,0);
+
+        categoryLayout.addView(checkTodoRemoveLayout);
+
+
+    }//DBtodoListAdd
+
+    private void DBTodoListRead(LinearLayout categoryLayout,String todoList,String cateGory,String color){
+        int vButtonState = 0;
+
+        DatabaseReference selectDayDB = todoListDB.child(selectDay);
+
+        String fixcolor = color.substring(8); // ex) categroy_brown -> brown
+        int resourceId = getResources().getIdentifier("oncheck_" + fixcolor, "drawable", getPackageName());
+
+        int maxLength = 15;
+        EditText todoListEd = new EditText(this);
+        todoListEd.setFilters(new InputFilter[] {
+                new InputFilter.LengthFilter(maxLength)}); //글자수제한
+        todoListEd.setVisibility(View.GONE);
+
+        // 체크 버튼 , 텍스트 , 삭제버튼을 담을 LinearLayout 생성
+        LinearLayout checkTodoRemoveLayout = new LinearLayout(this);
+        checkTodoRemoveLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        checkTodoRemoveLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        CheckBox vCheckBox = new CheckBox(this);
+        LayoutParams checkboxParams = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        checkboxParams.weight = 1;
+        vCheckBox.setLayoutParams(checkboxParams);
+        vCheckBox.setPadding(0,20,0,20);
+
+
+        // SharedPreferences를 사용하여 체크 상태를 저장
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs"+ cateGory + todoList, MODE_PRIVATE);
+        final boolean isChecked = sharedPreferences.getBoolean("isChecked", false);
+        vCheckBox.setChecked(isChecked); // 저장된 값으로 Checkbox 상태 설정
+
+        // 체크박스 클릭시 이미지 변경
+        vCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // 체크 상태가 변경될 때마다 SharedPreferences 업데이트
+                SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs"+ cateGory + todoList, MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isChecked", isChecked);
+                editor.apply();
+
+                if (isChecked) {
+                    vCheckBox.setButtonDrawable(resourceId); // 체크된 상태 이미지 설정
+                } else {
+                    vCheckBox.setButtonDrawable(R.drawable.offcheck); // 체크되지 않은 상태 이미지 설정
+                }
+                    underlineTextView(checkTodoRemoveLayout,isChecked); // 체크가 되면 밑줄
+
+            }
+        });
+
+
+        TextView todoListTv = new TextView(this);
+        LayoutParams textParams = new LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT
+        );
+        textParams.weight = 10;
+        todoListTv.setLayoutParams(textParams);
+        todoListEd.setLayoutParams(textParams);
+        todoListEd.setTextSize(20);
+        todoListEd.setText(todoList);
+        todoListTv.setTextSize(20);
+        todoListTv.setText(todoList);
         todoListTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -354,20 +620,126 @@ public class TodoMainActivity extends AppCompatActivity {
             }
         }); //todoListTv.setOnKeyListener
 
-        categoryLayout.addView(todoListEd, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-        categoryLayout.addView(todoListTv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
 
-    }//DBtodoListAdd
+
+        TextView deleteButton = new TextView(this);
+        LayoutParams deleteParams = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        deleteParams.weight = 1;
+        deleteButton.setLayoutParams(deleteParams);
+//        deleteButton.setWidth(100);
+        deleteButton.setPadding(0,20,20,20);
+        deleteButton.setText("X");
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.clear(); // checkbox 상태 담고있는 editor
+
+                categoryLayout.removeView(checkTodoRemoveLayout);
+                // categoryKey 아래에 있는 자식 노드들을 가져옵니다.
+                selectDayDB.child(cateGory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                            String childKey = childSnapshot.getKey();
+                            String childValue = childSnapshot.getValue(String.class);
+
+                            // 원하는 값을 가진 자식 노드를 삭제합니다.
+                            if (childValue.equals(todoList)) {
+                                selectDayDB.child(cateGory).child(childKey).removeValue();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // 에러 처리
+                    }
+                });
+            }
+        });
+
+        todoListEd.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_ENTER:
+                        if (todoListEd.getText().toString().equals("")) {
+                            categoryLayout.removeView(todoListEd);
+                            categoryLayout.removeView(todoListTv);
+                        }
+                        String dbIntodoList = todoListEd.getText().toString();
+
+                        String newKey = cateGory;
+
+                        while (hashMap.containsKey(newKey)) {
+                            newKey = cateGory + "_" + count; // 다른 이름으로 key를 변경
+                            count++;
+                        }
+                        hashMap.put(newKey, dbIntodoList);
+
+
+
+                        HashMap<String, Object> filteredMap = new HashMap<>();
+                        for (String key : hashMap.keySet()) {
+                            if (key.startsWith(todoList)) {
+                                String value = (String) hashMap.get(key);
+                                filteredMap.put(key, value);
+                            }
+                        }
+                        todoListDB.child(selectDay).child(cateGory).setValue(filteredMap);
+                        todoListTv.setText(dbIntodoList);
+                        todoListTv.setVisibility(View.VISIBLE);
+                        todoListEd.setVisibility(View.GONE);
+
+                        break;
+                }
+
+                return false;
+            }
+        });//todoListEd.setOnKeyListener
+
+        // 만들어논 레이아웃 화면에 보이기
+        checkTodoRemoveLayout.addView(vCheckBox);
+        checkTodoRemoveLayout.addView(todoListTv);
+        checkTodoRemoveLayout.addView(todoListEd);
+        checkTodoRemoveLayout.addView(deleteButton);
+        checkTodoRemoveLayout.setPadding(0,30,0,0);
+
+        // 상태값저장
+        TextView textView = (TextView) checkTodoRemoveLayout.getChildAt(1);
+        if (isChecked) {
+            vCheckBox.setButtonDrawable(resourceId); // 체크된 상태 이미지 설정
+            textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            vCheckBox.setButtonDrawable(R.drawable.offcheck); // 체크되지 않은 상태 이미지 설정
+            textView.setPaintFlags(textView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+        }
+
+
+
+        categoryLayout.addView(checkTodoRemoveLayout);
+
+        Log.d("checkTodo",String.valueOf(checkTodoRemoveLayout.getId()));
+
+    }//DBtodoListRead
 
     private void pushButton(String category) {
+
         // 배열에서 랜덤한 값을 출력합니다.
         int randomIndex = random.nextInt(categoryColor.length);  // 0부터 배열의 길이-1까지의 랜덤 인덱스를 생성합니다.
         String randomValue = categoryColor[randomIndex];
         // randomValue에 해당하는 drawable 리소스의 식별자를 가져옵니다.
         int resourceId = getResources().getIdentifier(randomValue, "drawable", getPackageName());
         drawable = ResourcesCompat.getDrawable(getResources(), resourceId, null);
+
+        hashMap = new HashMap<>(); // read()에서 저장된 hashMap을 초기화하기
+        hashMap.put("color",randomValue);
+        todoListDB.child(selectDay).child(category).setValue(hashMap);
+
 
 
         LinearLayout categoryLayout = new LinearLayout(this);
@@ -379,11 +751,11 @@ public class TodoMainActivity extends AppCompatActivity {
         categoryBtn.setTextColor(Color.WHITE);
         categoryBtn.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
         categoryBtn.setPadding(36, 0, 0, 0); // 카테고리 내부 글자 패딩 설정
-        categoryLayout.setPadding(50, 20, 0, 10); // 카테고리 버튼 패딩 설정
+        categoryLayout.setPadding(50, 20, 50, 10); // 카테고리 버튼 패딩 설정
         categoryBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TodoListAdd(categoryLayout,category);
+                TodoListAdd(categoryLayout,category,randomValue);
             }
         });
 
@@ -393,57 +765,80 @@ public class TodoMainActivity extends AppCompatActivity {
 
     } // pushButton
 
-    private void TodoListAdd(LinearLayout categoryLayout,String cateGory){
-        int maxLength = 15; //글자수 제한
+    private void TodoListAdd(LinearLayout categoryLayout,String cateGory,String color){
 
-        Toast.makeText(getApplicationContext(),cateGory,Toast.LENGTH_SHORT).show();
-        int i;
+        String fixcolor = color.substring(8); // ex) categroy_brown -> brown
+        int resourceId = getResources().getIdentifier("oncheck_" + fixcolor, "drawable", getPackageName());
+
+        int maxLength = 15;
         EditText todoListEd = new EditText(this);
         TextView todoListTv = new TextView(this);
-        todoListEd.setSingleLine(true); //줄바꿈 금지
+
         todoListEd.setFilters(new InputFilter[] {
                 new InputFilter.LengthFilter(maxLength)}); //글자수제한
-        todoListEd.setWidth(1000); // EditText 가로사이즈
-        todoListTv.setVisibility(View.GONE); // TextView 안보이게 설정
-        todoListTv.setTextSize(20); // TextView 글씨 크기
-        todoListTv.setPadding(40, 0, 0, 0);
 
-        todoListEd.setOnKeyListener(new View.OnKeyListener() {
+        todoListTv.setVisibility(View.GONE);
+
+        // 체크 버튼 , 텍스트 , 삭제버튼을 담을 LinearLayout 생성
+        LinearLayout checkTodoRemoveLayout = new LinearLayout(this);
+        checkTodoRemoveLayout.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        ));
+        checkTodoRemoveLayout.setOrientation(LinearLayout.HORIZONTAL);
+
+        CheckBox vCheckBox = new CheckBox(this);
+        LayoutParams checkboxParams = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        checkboxParams.weight = 1;
+        vCheckBox.setLayoutParams(checkboxParams);
+        boolean imgIsChecked  = false; // 체크박스 상태를 체크해 이미지 변경하기위한 변수
+        vCheckBox.setPadding(0,20,0,20);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("MyPrefs"+checkTodoRemoveLayout, MODE_PRIVATE);
+        boolean isChecked = sharedPreferences.getBoolean("isChecked", false);
+        vCheckBox.setChecked(isChecked); // 저장된 값으로 Checkbox 상태 설정
+
+
+        // 체크박스 클릭시 이미지 변경
+        vCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                switch (keyCode) {
-                    case KeyEvent.KEYCODE_ENTER:
-                        if(todoListEd.getText().toString().equals("")){
-                            categoryLayout.removeView(todoListEd);
-                            categoryLayout.removeView(todoListTv);
-                        }
-                        String todoList = todoListEd.getText().toString();
-                        TodoList1.put(cateGory+todoListNum,todoList);
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                // 체크 상태가 변경될 때마다 SharedPreferences 업데이트
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putBoolean("isChecked", isChecked);
+                editor.apply();
 
-                        HashMap<String, Object> filteredMap = new HashMap<>();
-                        for (String key : TodoList1.keySet()) {
-                            if (key.startsWith(cateGory)) {
-                                String value = (String) TodoList1.get(key);
-                                filteredMap.put(key, value);
-                            }
-                        }
-                        todoListDB.child(cateGory).setValue(filteredMap);
-
-                        todoListTv.setText(todoList);
-                        todoListTv.setVisibility(View.VISIBLE);
-                        todoListEd.setVisibility(View.GONE);
-
-                        // todoListDB.child(cateGory).setValue(TodoList1);
-
-                        // todoListDB.child(value).child("todoList"+todoListNum).setValue(todoList);
-                        todoListNum+=1;
-                        break;
+                if (isChecked) {
+                    vCheckBox.setButtonDrawable(resourceId); // 체크된 상태 이미지 설정
+                } else {
+                    vCheckBox.setButtonDrawable(R.drawable.offcheck); // 체크되지 않은 상태 이미지 설정
                 }
+                underlineTextView(checkTodoRemoveLayout,isChecked); // 체크가 되면 밑줄
+//                imgIsChecked = imgIsChecked;
 
-                return false;
             }
-        });//todoListEd.setOnKeyListener
+        });
 
+        if (isChecked) {
+            vCheckBox.setButtonDrawable(resourceId); // 체크된 상태 이미지 설정
+        } else {
+            vCheckBox.setButtonDrawable(R.drawable.offcheck); // 체크되지 않은 상태 이미지 설정
+        }
+
+
+        LayoutParams textParams = new LayoutParams(
+                0,
+                LayoutParams.WRAP_CONTENT
+        );
+        textParams.weight = 10;
+        todoListTv.setLayoutParams(textParams);
+        todoListEd.setLayoutParams(textParams);
+        todoListEd.setTextSize(20);
+        todoListEd.setHint("15자 미만 입력 해주세요.");
+        todoListTv.setTextSize(20);
         todoListTv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -452,15 +847,105 @@ public class TodoMainActivity extends AppCompatActivity {
             }
         }); //todoListTv.setOnKeyListener
 
-        categoryLayout.addView(todoListEd, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-        categoryLayout.addView(todoListTv, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
+
+
+        TextView deleteButton = new TextView(this);
+        LayoutParams deleteParams = new LayoutParams(
+                LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT
+        );
+        deleteParams.weight = 1;
+        deleteButton.setLayoutParams(deleteParams);
+        deleteButton.setPadding(0,20,20,20);
+        deleteButton.setText("X");
+
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                categoryLayout.removeView(checkTodoRemoveLayout);
+                // categoryKey 아래에 있는 자식 노드들을 가져옵니다.
+                todoListDB.child(selectDay).child(cateGory).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for (DataSnapshot childSnapshot : dataSnapshot.getChildren()) {
+                            String childKey = childSnapshot.getKey();
+                            String childValue = childSnapshot.getValue(String.class);
+                            String node = todoListTv.getText().toString();
+                            // 원하는 값인 를 가진 자식 노드를 삭제합니다.
+                            if (childValue.equals(node)) {
+                                todoListDB.child(cateGory).child(childKey).removeValue();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        // 에러 처리
+                    }
+                });
+            }
+        });
+
+        todoListEd.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                switch (keyCode) {
+                    case KeyEvent.KEYCODE_ENTER:
+                        if (todoListEd.getText().toString().equals("")) {
+                            categoryLayout.removeView(todoListEd);
+                            categoryLayout.removeView(todoListTv);
+                        }
+                        String todoList = todoListEd.getText().toString();
+
+                        String newKey = cateGory;
+
+                        while (hashMap.containsKey(newKey)) {
+                            newKey = cateGory + "_" + count; // 다른 이름으로 key를 변경
+                            count++;
+                        }
+                        hashMap.put(newKey, todoList);
+
+
+
+                        HashMap<String, Object> filteredMap = new HashMap<>();
+                        for (String key : hashMap.keySet()) {
+                            if (key.startsWith(cateGory) || key.startsWith("color")) {
+                                String value = (String) hashMap.get(key);
+                                filteredMap.put(key, value);
+                            }
+                        }
+                        todoListDB.child(selectDay).child(cateGory).setValue(filteredMap);
+                        todoListTv.setText(todoList);
+                        todoListTv.setVisibility(View.VISIBLE);
+                        todoListEd.setVisibility(View.GONE);
+                        break;
+                }
+
+                return false;
+            }
+        });//todoListEd.setOnKeyListener
+
+        // 만들어논 레이아웃 화면에 보이기
+        checkTodoRemoveLayout.addView(vCheckBox);
+        checkTodoRemoveLayout.addView(todoListTv);
+        checkTodoRemoveLayout.addView(todoListEd);
+        checkTodoRemoveLayout.addView(deleteButton);
+        checkTodoRemoveLayout.setPadding(0,30,0,0);
+        Log.d("특정값1",todoListTv.toString());
+
+        categoryLayout.addView(checkTodoRemoveLayout);
+
 
     }//todoListAdd
 
-    public void addCategory(String category){
-        item.setCategory(category);
+    private void underlineTextView(LinearLayout layout,boolean isChecked) {
+        TextView textView = (TextView) layout.getChildAt(1);
+        if (isChecked) {
+            textView.setPaintFlags(textView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        } else {
+            textView.setPaintFlags(textView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+        }
     }
 
 } // main
