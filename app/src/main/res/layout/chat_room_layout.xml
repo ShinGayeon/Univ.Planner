@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <ListView
+        android:id="@+id/chatListView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:divider="#ffffff"
+        android:dividerHeight="0dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        android:gravity="center_vertical"
+        android:background="#BB2649">
+        <ImageView
+            android:layout_width="23dp"
+            android:layout_height="23dp"
+            android:id="@+id/chatLink"
+            android:src="@drawable/link_icon"
+            android:layout_marginRight="4dp"
+            android:layout_marginLeft="5dp"/>
+        <EditText
+            android:id="@+id/chatEditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="  자유롭게 질문해보세요!"
+            android:textColorHint="#ffffff"
+            android:inputType="textMultiLine"
+            android:background="@drawable/chat_edit_text_back"
+            android:drawableEnd="@drawable/emoji"
+
+            android:padding="10dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginLeft="4dp"
+            android:textSize="12sp"
+            android:maxLines="3" />
+        <Button
+            android:layout_width="65dp"
+            android:layout_height="45dp"
+            android:id="@+id/chatSendBtn"
+            android:text="전송"
+            android:layout_marginLeft="4dp"
+            android:onClick="clickSend"/>
+    </LinearLayout>
+</LinearLayout>

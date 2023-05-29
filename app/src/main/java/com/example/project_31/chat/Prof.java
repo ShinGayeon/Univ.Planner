@@ -1,5 +1,6 @@
 package com.example.project_31.chat;
 
+// 채팅 - 교수 DTO
 public class Prof {
     String name;
     String major;

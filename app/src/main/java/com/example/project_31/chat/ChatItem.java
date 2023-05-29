@@ -1,16 +1,17 @@
 package com.example.project_31.chat;
 
+// 채팅 - 채팅 DTO
 public class ChatItem {
     String name;
     String message;
     String time;
-    String pofileUrl;
+    String profileUrl;
 
-    public ChatItem(String name, String message, String time, String pofileUrl) {
+    public ChatItem(String name, String message, String time, String profileUrl) {
         this.name = name;
         this.message = message;
         this.time = time;
-        this.pofileUrl = pofileUrl;
+        this.profileUrl = profileUrl;
     }
 
     //firebase DB에 객체로 값을 읽어올 때..
@@ -43,11 +44,11 @@ public class ChatItem {
         this.time = time;
     }
 
-    public String getPofileUrl() {
-        return pofileUrl;
+    public String getProfileUrl() {
+        return profileUrl;
     }
 
     public void setPofileUrl(String pofileUrl) {
-        this.pofileUrl = pofileUrl;
+        this.profileUrl = pofileUrl;
     }
 }

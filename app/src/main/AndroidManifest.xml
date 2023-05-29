@@ -27,8 +27,11 @@
         <activity android:name=".todo.Monthly" />
         <activity android:name=".todo.TodoMainActivity" />
         <activity android:name=".chat.ChatMainActivity" />
-        <activity android:name=".login.LoginActivity"> </activity>
-        <activity android:name=".login.SignUpActivity"> </activity>
+        <activity android:name=".chat.ChatActivity" />
+        <activity android:name=".chat.ChatListActivity" />
+        <activity android:name=".chat.ChatEx" />
+        <activity android:name=".login.LoginActivity" />
+        <activity android:name=".login.SignUpActivity" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 

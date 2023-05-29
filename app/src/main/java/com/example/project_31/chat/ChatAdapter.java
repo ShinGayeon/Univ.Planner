@@ -1,5 +1,6 @@
 package com.example.project_31.chat;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+// 채팅 - 채팅방 어댑터
 public class ChatAdapter extends BaseAdapter {
 
     ArrayList<ChatItem> chatItems;
@@ -47,13 +49,15 @@ public class ChatAdapter extends BaseAdapter {
         // 재활용할 뷰 사용 안 함
         View itemView = null;
 
+
         // 메세지가 내 메세지인지 확인
-//        if (item.getName().equals(G.nickName)) {
-//            itemView = layoutInflater.inflate(R.layout.chat_my_box, viewGroup, false);
-//        } else {
-//            itemView = layoutInflater.inflate(R.layout.chat_other_box, viewGroup, false
-//            );
-//        }
+        if (item.getName().equals(G.nickName)) {
+            itemView = layoutInflater.inflate(R.layout.chat_my_box, viewGroup, false);
+            Log.d("테스트",viewGroup.toString());
+        } else {
+            itemView = layoutInflater.inflate(R.layout.chat_other_box, viewGroup, false);
+        }
+
 
         //만들어진 itemView에 값들 설정
         CircleImageView chatImg = itemView.findViewById(R.id.chatImg);
@@ -65,7 +69,7 @@ public class ChatAdapter extends BaseAdapter {
         chatMsg.setText(item.getMessage());
         chatTime.setText(item.getTime());
 
-        Glide.with(itemView).load(item.getPofileUrl()).into(chatImg);
+        Glide.with(itemView).load(item.getProfileUrl()).into(chatImg);
 
         return itemView;
     }
