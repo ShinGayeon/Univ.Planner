@@ -28,7 +28,7 @@
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
             android:gravity="center"
-            android:text="chat"
+            android:text=" "
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#000000"
@@ -38,6 +38,16 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1" />
+        <Button
+            android:layout_width="90dp"
+            android:layout_height="40dp"
+            android:layout_marginRight="5dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="5dp"
+            android:backgroundTint="#BB2649"
+            android:text="채팅방이동"
+            android:textStyle="bold"
+            android:id="@+id/moveChat" />
 
         <Button
             android:layout_width="90dp"

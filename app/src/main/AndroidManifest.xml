@@ -30,8 +30,8 @@
         <activity android:name=".chat.ChatActivity" />
         <activity android:name=".chat.ChatListActivity" />
         <activity android:name=".chat.ChatEx" />
-        <activity android:name=".login.LoginActivity" />
         <activity android:name=".login.SignUpActivity" />
+        <activity android:name=".main.RealMainActivity" />
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 

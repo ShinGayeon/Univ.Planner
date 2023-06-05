@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 프로필 사진 넣을 곳 -->
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/profile"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:src="@drawable/cute" />
+
+        <!-- 이름 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="신 짱 구"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <!-- 상태명 -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:text="부 리 부 리 땐 스"
+            android:textSize="25sp"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+
+    <!-- 첫번째 버튼 열 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp">
+
+        <Button
+            android:id="@+id/btnbook"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="30dp"
+            android:text="Dictionary"
+            android:backgroundTint="#BB2649"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:icon="@drawable/book_icon"
+            app:iconGravity="textTop" />
+
+        <Button
+            android:id="@+id/btnchat"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:text="Chat"
+            android:backgroundTint="#BB2649"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:icon="@drawable/chat_icon"
+            app:iconGravity="textTop"/>
+
+        <Button
+            android:id="@+id/btntodo"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:text="To-Do"
+            android:backgroundTint="#BB2649"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:icon="@drawable/todo_icon"
+            app:iconGravity="textTop"/>
+
+    </LinearLayout>
+
+    <!-- 두번째 버튼 열 (추후 개발 예정) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/btnshop"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginLeft="25dp"
+            android:layout_marginTop="30dp"
+            android:text="shop"
+            android:backgroundTint="#BB2649"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:icon="@drawable/shop_icon"
+            app:iconGravity="textTop" />
+
+        <Button
+            android:id="@+id/btncommunity"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:text="community"
+            android:backgroundTint="#BB2649"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:icon="@drawable/community_icon"
+            app:iconGravity="textTop"/>
+
+        <Button
+            android:id="@+id/btnloading"
+            android:layout_width="115dp"
+            android:layout_height="115dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="30dp"
+            android:text="loading.."
+            android:backgroundTint="#BB2649"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            app:icon="@drawable/loading_icon"
+            app:iconGravity="textTop"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/btnhp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:backgroundTint="@color/white"
+            android:src="@drawable/yeonsung_image" />
+
+    </LinearLayout>
+
+</LinearLayout>
